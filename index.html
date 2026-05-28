@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>专属抽签系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Comic Sans MS", "微软雅黑", cursive;
+        }
+
+        body {
+            background-color: #FFE6EE; /* 淡粉色背景 */
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* 初始选择界面 */
+        .start-screen {
+            background-color: #DEB887; /* 原木色 */
+            padding: 40px 60px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+        }
+
+        .start-screen h1 {
+            color: #000;
+            font-size: 28px;
+            margin-bottom: 30px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .btn {
+            background-color: #F5DEB3;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 18px;
+            color: #000;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* 抽签界面 */
+        .draw-screen {
+            display: none;
+            text-align: center;
+        }
+
+        .jar {
+            width: 220px;
+            height: 320px;
+            background-color: #DEB887; /* 原木色签筒 */
+            border-radius: 15px 15px 40px 40px;
+            position: relative;
+            margin: 0 auto;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        /* 签子样式 */
+        .stick {
+            width: 160px;
+            height: 30px;
+            background-color: #F5DEB3;
+            border: 1px solid #D2B48C;
+            border-radius: 4px;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        /* 震动动画 */
+        @keyframes shake {
+            0% { transform: translateX(-50%) rotate(0deg); }
+            10% { transform: translateX(-50%) rotate(-5deg); }
+            20% { transform: translateX(-50%) rotate(5deg); }
+            30% { transform: translateX(-50%) rotate(-5deg); }
+            40% { transform: translateX(-50%) rotate(5deg); }
+            50% { transform: translateX(-50%) rotate(-5deg); }
+            60% { transform: translateX(-50%) rotate(5deg); }
+            70% { transform: translateX(-50%) rotate(-5deg); }
+            80% { transform: translateX(-50%) rotate(5deg); }
+            90% { transform: translateX(-50%) rotate(-5deg); }
+            100% { transform: translateX(-50%) rotate(0deg); }
+        }
+
+        .jar.shaking {
+            animation: shake 0.6s ease-in-out 3;
+        }
+
+        /* 结果展示 */
+        .result {
+            margin-top: 30px;
+            font-size: 24px;
+            color: #000;
+            background-color: #DEB887;
+            padding: 15px 30px;
+            border-radius: 15px;
+            display: none;
+        }
+
+        .tip {
+            margin-top: 20px;
+            color: #555;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 初始选择界面 -->
+    <div class="start-screen" id="startScreen">
+        <h1>准备好了吗？</h1>
+        <div class="btn-group">
+            <button class="btn" onclick="goToDraw()">准备好了</button>
+            <button class="btn" onclick="goToDraw()">准备的不能再好了</button>
+        </div>
+    </div>
+
+    <!-- 抽签界面 -->
+    <div class="draw-screen" id="drawScreen">
+        <div class="jar" id="jar">
+            <!-- 7根签子 -->
+            <div class="stick" style="top: 40px;">梁祯元</div>
+            <div class="stick" style="top: 75px;">朴综星</div>
+            <div class="stick" style="top: 110px;">沈载伦</div>
+            <div class="stick" style="top: 145px;">朴成训</div>
+            <div class="stick" style="top: 180px;">金善禹</div>
+            <div class="stick" style="top: 215px;">西村力</div>
+            <div class="stick" style="top: 250px;">卧槽绝版人物</div>
+        </div>
+        <div class="tip" id="tip">点击签筒开始摇晃！</div>
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        const drawScreen = document.getElementById('drawScreen');
+        const jar = document.getElementById('jar');
+        const tip = document.getElementById('tip');
+        const resultDiv = document.getElementById('result');
+        const sticks = [
+            "梁祯元",
+            "朴综星",
+            "沈载伦",
+            "朴成训",
+            "金善禹",
+            "西村力",
+            "卧槽绝版人物"
+        ];
+
+        let canDraw = false;
+
+        // 进入抽签界面
+        function goToDraw() {
+            document.getElementById('startScreen').style.display = 'none';
+            drawScreen.style.display = 'block';
+        }
+
+        // 点击签筒事件
+        jar.addEventListener('click', () => {
+            if (!canDraw) {
+                // 第一次点击：摇晃
+                jar.classList.add('shaking');
+                tip.textContent = "摇晃中...再点一下抽签！";
+                setTimeout(() => {
+                    jar.classList.remove('shaking');
+                    canDraw = true;
+                    tip.textContent = "再点一下签筒，看看是谁！";
+                }, 1800);
+            } else {
+                // 第二次点击：随机抽签
+                const randomIndex = Math.floor(Math.random() * sticks.length);
+                const selectedStick = sticks[randomIndex];
+                resultDiv.textContent = "抽到：" + selectedStick;
+                resultDiv.style.display = 'block';
+                tip.textContent = "抽签完成！刷新页面可以重新抽哦~";
+                canDraw = false;
+            }
+        });
+    </script>
+</body>
+</html>
