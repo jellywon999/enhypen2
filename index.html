@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>抽签系统</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;user-select:none;}
+  body{
+    height:100vh;
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+    background:#f5f0e6;
+    font-family:"Microsoft YaHei",sans-serif;
+  }
+
+  /* 签筒容器 */
+  .tube{
+    width:220px;height:320px;
+    position:relative;
+    background:linear-gradient(135deg,#d2b48c,#a67c52);
+    border-radius:12px 12px 20px 20px;
+    box-shadow:0 8px 20px rgba(0,0,0,0.25);
+    overflow:hidden;
+  }
+
+  /* 单根签子：内容隐藏 */
+  .stick{
+    position:absolute;
+    bottom:0;
+    width:12px;height:260px;
+    background:linear-gradient(to right,#f4e3c1,#e8d0a8);
+    border-radius:4px;
+    left:50%;
+    transform-origin:center bottom;
+    /* 文字隐藏 */
+    color:transparent;
+    font-size:1px;
+  }
+
+  /* 晃动动画：每根签都在抖，丝滑 */
+  @keyframes shake{
+    0%{transform:translateX(-50%) rotate(0deg);}
+    25%{transform:translateX(-50%) rotate(-6deg);}
+    50%{transform:translateX(-50%) rotate(0deg);}
+    75%{transform:translateX(-50%) rotate(6deg);}
+    100%{transform:translateX(-50%) rotate(0deg);}
+  }
+
+  /* 跳出动画 */
+  @keyframes jumpOut{
+    0%{transform:translateX(-50%) rotate(0deg);opacity:1;}
+    60%{transform:translateX(-80%) translateY(-180px) rotate(12deg);opacity:1;}
+    100%{transform:translateX(-100%) translateY(-220px) rotate(18deg);opacity:1;}
+  }
+
+  .shaking .stick{
+    animation:shake 0.25s ease-in-out infinite;
+  }
+
+  /* 按钮 */
+  #btn{
+    margin-top:30px;
+    padding:12px 28px;
+    font-size:18px;
+    background:#8b4513;
+    color:#fff;
+    border:none;border-radius:8px;
+    cursor:pointer;
+    box-shadow:0 4px 10px rgba(0,0,0,0.2);
+  }
+  #btn:disabled{background:#999;cursor:not-allowed;}
+
+  /* 结果弹窗 */
+  #result{
+    margin-top:20px;
+    font-size:22px;
+    color:#8b4513;
+    font-weight:bold;
+    height:30px;
+  }
+</style>
+</head>
+<body>
+
+<div class="tube" id="tube"></div>
+<button id="btn">开始抽签</button>
+<div id="result"></div>
+
+<script>
+// 签文（内容全程隐藏，只最后显示）
+const texts = [
+  "大吉：万事顺遂",
+  "中吉：小有波折",
+  "小吉：平稳安康",
+  "凶：谨慎行事",
+  "上上签：好运连连",
+  "下下签：低调忍耐"
+];
+
+const tube = document.getElementById("tube");
+const btn = document.getElementById("btn");
+const result = document.getElementById("result");
+
+let sticks = [];
+let isShaking = false;
+
+// 生成签子（文字透明，隐藏内容）
+function createSticks(){
+  tube.innerHTML = "";
+  sticks = [];
+  const count = 24; // 签子数量
+  for(let i=0;i<count;i++){
+    const s = document.createElement("div");
+    s.className = "stick";
+    // 随机左右分布
+    const left = 40 + Math.random()*20;
+    s.style.left = left + "%";
+    // 随机倾斜一点，更自然
+    s.style.transform = `translateX(-50%) rotate(${(Math.random()-0.5)*8}deg)`;
+    // 签文存在元素里，但透明
+    s.textContent = texts[Math.floor(Math.random()*texts.length)];
+    tube.appendChild(s);
+    sticks.push(s);
+  }
+}
+
+// 摇晃
+function startShake(){
+  if(isShaking) return;
+  isShaking = true;
+  btn.disabled = true;
+  result.textContent = "";
+  tube.classList.add("shaking");
+
+  // 3秒后停止，跳签
+  setTimeout(()=>{
+    tube.classList.remove("shaking");
+    // 随机选一根跳出
+    const idx = Math.floor(Math.random()*sticks.length);
+    const chosen = sticks[idx];
+    chosen.style.animation = "jumpOut 0.8s ease-out forwards";
+    // 显示结果
+    setTimeout(()=>{
+      result.textContent = chosen.textContent;
+      isShaking = false;
+      btn.disabled = false;
+      // 重置签子位置
+      setTimeout(createSticks,600);
+    },800);
+  },3000);
+}
+
+btn.addEventListener("click",startShake);
+// 初始化
+createSticks();
+</script>
+
+</body>
+</html>
